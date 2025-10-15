@@ -1,21 +1,31 @@
 ﻿using System;
 using System.Collections.Generic;
 
-public class Sentence
+public class Sentence : Token
 {
-    private List<object> tokens = new List<object>();
-    public IReadOnlyList<object> Tokens => tokens;
-    public void AddToken(object token)
+    private List<Token> tokens = new List<Token>();
+
+    // Value предложения - это объединение всех его токенов
+    public override string Value
+    {
+        get
+        {
+            string result = "";
+            foreach (var token in tokens)
+            {
+                result += token.Value;
+            }
+            return result;
+        }
+    }
+    public IReadOnlyList<Token> Tokens => tokens;
+    public void AddToken(Token token)
     {
         if (token is Word || token is Punctuation)
         {
             tokens.Add(token);
         }
-        else
-        {
-            // Если передан неправильный тип объекта - выбрасываем исключение
-            throw new ArgumentException("Token must be Word or Punctuation");
-        }
+
     }
 
     // Количество слов в предложении
@@ -40,7 +50,7 @@ public class Sentence
     }
 
     // Общая длина предложения в символах
-    public int Length
+    public override int Length
     {
         get
         {
@@ -48,16 +58,8 @@ public class Sentence
 
             foreach (var token in tokens)
             {
-                // Если токен - слово, добавляем его длину
-                if (token is Word word)
-                {
-                    totalLength += word.Length;
-                }
-                // Если токен - знак препинания, добавляем длину знака
-                else if (token is Punctuation punctuation)
-                {
-                    totalLength += punctuation.Value.Length;
-                }
+                // Добавляем длину токена
+                totalLength += token.Length;
             }
             return totalLength;
         }
@@ -99,16 +101,22 @@ public class Sentence
         return words;
     }
 
-    // Метод преобразования предложения в строку
-    public override string ToString()
+    public override bool Equals(object obj)
     {
-        var result = "";
-        // Проходим по всем токенам и добавляем их текстовое представление к результату
-        foreach (var token in tokens)
+        if (obj is Sentence sentence)
         {
-            result += token.ToString();
+            if (tokens.Count != sentence.tokens.Count)
+                return false;
+
+            for (int i = 0; i < tokens.Count; i++)
+            {
+                if (!tokens[i].Equals(sentence.tokens[i]))
+                    return false;
+            }
+            return true;
         }
-        return result;
+        return false;
     }
+
 }
 

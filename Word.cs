@@ -1,7 +1,7 @@
 ﻿using System;
-public class Word
+public class Word : Token 
 {
-    public string Value { get; private set; }
+    public override string Value { get; }
 
     public bool IsStopWord { get; set; }
 
@@ -14,16 +14,9 @@ public class Word
         Value = value;
     }
 
-    // Когда мы пишем word.ToString(), вернется значение свойства Value
-    public override string ToString() => Value;
-
     public override bool Equals(object obj)
     {
         return obj is Word word && Value.Equals(word.Value, StringComparison.OrdinalIgnoreCase);
-    }
-    public override int GetHashCode()
-    {
-        return Value.ToLower().GetHashCode();
     }
 }
 

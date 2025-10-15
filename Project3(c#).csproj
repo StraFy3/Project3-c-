@@ -39,6 +39,7 @@
     <Compile Include="Punction.cs" />
     <Compile Include="Sentence.cs" />
     <Compile Include="Text.cs" />
+    <Compile Include="Token.cs" />
     <Compile Include="Word.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
