@@ -19,6 +19,8 @@ public class Sentence : Token
         }
     }
     public IReadOnlyList<Token> Tokens => tokens;
+
+    public List<Token> TokensPublic => tokens;
     public void AddToken(Token token)
     {
         if (token is Word || token is Punctuation)
