@@ -70,16 +70,47 @@ public class Sentence : Token
     {
         get
         {
-            foreach (var token in tokens)
+            for (int i = 0; i < tokens.Count; i++)
             {
+                var token = tokens[i];         
                 // Если нашли знак препинания и это вопросительный знак
-                if (token is Punctuation punctuation && punctuation.Value == "?")
+                if (token is Punctuation punctuation && punctuation.Value == "?") ////
                 {
-                    return true; // Предложение вопросительное
+                    if (IsQuestionMarkEndOfSentence(i))
+                    {
+                        return true;
+                    }
                 }
             }
-            return false; // Вопросительного знака не найдено
+            return false;
         }
+    }
+
+    private bool IsQuestionMarkEndOfSentence(int questionMarkIndex)
+    {
+        if (questionMarkIndex == tokens.Count - 1)
+            return true;
+
+        for (int i = questionMarkIndex + 1; i < tokens.Count; i++)
+        {
+            var nextToken = tokens[i];
+
+            if (nextToken is Word nextWord)
+            {
+                return StartsWithUpperCase(nextWord.Value);
+            }
+        }
+
+        return true;
+    }
+
+    private bool StartsWithUpperCase(string word)
+    {
+        if (string.IsNullOrEmpty(word))
+            return false;
+
+        char firstChar = word[0];
+        return char.IsUpper(firstChar);
     }
 
     // Возвращает только слова из предложения

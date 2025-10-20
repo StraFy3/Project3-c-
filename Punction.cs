@@ -7,7 +7,7 @@
         Value = value;
     }
 
-    public bool IsSentenceEnding => Value == "." || Value == "!" || Value == "?";
+    public bool IsSentenceEnding => Value == "." || Value == "!" || Value == "?" || Value == "..."; ///
 
     public override bool Equals(object obj)
     {
