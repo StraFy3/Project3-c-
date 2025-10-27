@@ -5,42 +5,53 @@ public class TextParser
 {
     public Text Parse(string text)
     {
-        // Создаем пустой текст
         var result = new Text();
 
-        // Регулярное выражение для разбиения на предложения
-        // [^.!?…]* - любые символы кроме .!?… (0 или более раз)
-        // [.!?…] - один из знаков конца предложения
-        var sentencePattern = @"[^.!?…]*[.!?…]";
-        // Ищем все совпадения с паттерном
-        var sentenceMatches = Regex.Matches(text, sentencePattern);
+        if (string.IsNullOrWhiteSpace(text))
+            return result;
 
-        for (int i = 0; i < sentenceMatches.Count; i++)
+        // Улучшенное регулярное выражение, которое игнорирует точки после цифр (нумерацию)
+        // (?<!\d\.) - Не должно быть цифры с точкой перед разделителем
+        string sentencePattern = @"(?<!\d\.)(?<=[.!?])\s+";
+
+        // Разбиваем текст на предложения
+        string[] sentenceStrings = Regex.Split(text, sentencePattern);
+
+        foreach (string sentenceText in sentenceStrings)
         {
-            var sentenceMatch = sentenceMatches[i];
-            // Убираем пробелы в начале и конце
-            var sentenceText = sentenceMatch.Value.Trim();
-            // Пропускаем пустые предложения
-            if (string.IsNullOrEmpty(sentenceText)) continue;
+            string trimmedSentence = sentenceText.Trim();
 
-            // Парсим предложение на слова и знаки препинания
-            var sentence = ParseSentence(sentenceText);
+            // Пропускаем пустые строки и отдельные цифры с точками
+            if (string.IsNullOrEmpty(trimmedSentence) || IsJustNumbering(trimmedSentence))
+                continue;
+
+            // Убедимся, что предложение заканчивается знаком препинания
+            if (!Regex.IsMatch(trimmedSentence, @"[.!?]$"))
+            {
+                trimmedSentence += ".";
+            }
+
+            // Парсим предложение и добавляем в результат
+            var sentence = ParseSentence(trimmedSentence);
             result.AddSentence(sentence);
         }
 
         return result;
     }
 
+    // Проверяет, является ли строка просто нумерацией (например, "1.", "2.")
+    private bool IsJustNumbering(string text)
+    {
+        return Regex.IsMatch(text, @"^\d+\.$");
+    }
+
     // Метод парсинга отдельного предложения
     private Sentence ParseSentence(string sentenceText)
     {
         var sentence = new Sentence();
-
-        // Регулярное выражение для разбиения на токены:
-        // (\w+) - слово (буквы, цифры, подчеркивание)
-        // | - или
-        // ([^\w\s]|…) - знак препинания (не буква и не пробел) или троеточие
-        var pattern = @"(\w+)|([^\w\s]|…)";
+        // Улучшенный паттерн для разбиения на слова и знаки препинания
+        // Теперь учитывает цифры с точками как часть слова
+        var pattern = @"(\w+[.]?\w*)|([^\w\s]|…)";
         var matches = Regex.Matches(sentenceText, pattern);
 
         // Обрабатываем каждый найденный токен
@@ -49,7 +60,16 @@ public class TextParser
             var match = matches[i];
             if (match.Groups[1].Success) // Если нашли слово
             {
-                sentence.AddToken(new Word(match.Value));
+                string value = match.Value;
+                if (value.EndsWith(".") && IsNumberWithDot(value))
+                {
+                    // Это номер с точкой - добавляем как слово
+                    sentence.AddToken(new Word(value));
+                }
+                else
+                {
+                    sentence.AddToken(new Word(match.Value));
+                }
             }
             else if (match.Groups[2].Success) // Если нашли знак препинания
             {
@@ -58,6 +78,16 @@ public class TextParser
         }
 
         return sentence;
+    }
+
+    // Проверяет, является ли строка номером с точкой (например, "1.", "2.3")
+    private bool IsNumberWithDot(string value)
+    {
+        if (string.IsNullOrEmpty(value) || !value.EndsWith("."))
+            return false;
+
+        string withoutDot = value.Substring(0, value.Length - 1); // Берем подстроку с начала до предпоследнего символа
+        return double.TryParse(withoutDot, out _); // Символ _ означает, что не важно полученное числовое значение, только true или false
     }
 
     // Метод для парсинга текста из файла
