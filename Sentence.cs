@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Text;
 
 public class Sentence : Token
 {
@@ -10,14 +11,38 @@ public class Sentence : Token
     {
         get
         {
-            string result = "";
-            foreach (var token in tokens)
+            var result = new StringBuilder();
+            for (int i = 0; i < tokens.Count; i++)
             {
-                result += token.Value;
+                result.Append(tokens[i].Value);
+                if (i < tokens.Count - 1 && AddSpace(tokens[i], tokens[i + 1]))
+                {
+                    result.Append(" ");
+                }
             }
-            return result;
+            return result.ToString();
         }
     }
+
+    private bool AddSpace(Token current, Token next)
+    {
+        // Добавляем пробел между словами
+        if (current is Word && next is Word)
+            return true;
+
+        // Добавляем пробел после запятой, точки с запятой и т.д.
+        if (current is Punctuation p1 &&
+            (p1.Value == "," || p1.Value == ";" || p1.Value == ":"))
+            return true;
+
+        // Добавляем пробел перед открывающей кавычкой
+        if (next is Punctuation p2 &&
+            (p2.Value == "\"" || p2.Value == "«" || p2.Value == "("))
+            return true;
+
+        return false;
+    }
+
     public IReadOnlyList<Token> Tokens => tokens;
 
     public List<Token> TokensPublic => tokens;

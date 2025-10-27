@@ -37,8 +37,10 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Program.cs" />
     <Compile Include="Punction.cs" />
     <Compile Include="Sentence.cs" />
+    <Compile Include="StopWordsLoader.cs" />
     <Compile Include="Text.cs" />
     <Compile Include="TextParser.cs" />
     <Compile Include="Token.cs" />
